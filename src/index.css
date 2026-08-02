@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Winning stat pulse, Stage 5. Runs when the compared row appears on the
+   round winner's card. */
+@keyframes statPulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+}
+.animate-stat-pulse {
+  animation: statPulse 0.45s ease-in-out 2;
+}
+
+/* Shuffle animation on new game, Stage 5. Each card fans out sideways and
+   returns, staggered by inline animation delay. */
+@keyframes shuffleCard {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  40% {
+    transform: translate(calc(-50% + var(--dx)), calc(-50% - 42px)) rotate(var(--rot));
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+}
+.shuffle-card {
+  animation: shuffleCard 1.1s ease-in-out both;
+}
+
+/* Round banner slide in, retriggered by keying the element per round. */
+@keyframes bannerIn {
+  from {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.animate-banner-in {
+  animation: bannerIn 0.25s ease-out both;
+}
+
+/* End of game, win. Confetti pieces in brand colours fall the full screen. */
+@keyframes confettiFall {
+  0% {
+    transform: translateY(-12vh) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(112vh) rotate(720deg);
+    opacity: 0.75;
+  }
+}
+.confetti-piece {
+  position: fixed;
+  top: 0;
+  animation: confettiFall linear infinite both;
+}
+
+/* End of game, win. The result panel pops in. */
+@keyframes panelPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-panel-pop {
+  animation: panelPop 0.5s ease-out both;
+}
+
+/* End of game, loss. The result panel shakes once. */
+@keyframes panelShake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-10px);
+  }
+  40% {
+    transform: translateX(10px);
+  }
+  60% {
+    transform: translateX(-6px);
+  }
+  80% {
+    transform: translateX(6px);
+  }
+}
+.animate-panel-shake {
+  animation: panelShake 0.6s ease-in-out both;
+}
