@@ -3,3 +3,4 @@ dist
 *.local
 dev-server.cmd
 .github/workflows/deploy.yml
+deploy.cmd
