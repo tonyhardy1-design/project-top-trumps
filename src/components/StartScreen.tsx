@@ -38,9 +38,9 @@ export default function StartScreen({ onPlay }: StartScreenProps) {
             Project <span className="text-turmeric">Top Trumps</span>
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-neutral-700">
-            Take on the computer with real Stace cost data. Six rounds, the chooser
-            picks a stat each round, the better value takes the cards, and whoever
-            holds the most cards at the end wins.
+            Take on the computer with real Stace cost data. Six rounds, you pick a
+            stat each round, the better value takes the cards, and whoever holds
+            the most cards at the end wins.
           </p>
           <p className="mt-2 text-xs text-neutral-500">
             This deck covers Residential and Student Accommodation projects only,
