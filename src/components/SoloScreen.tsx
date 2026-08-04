@@ -9,6 +9,9 @@ import StaceLogo from './StaceLogo';
 const HUMAN = 0;
 const CPU = 1;
 
+/** Fixed game length for the staff event, most cards after six rounds wins. */
+export const GAME_ROUNDS = 6;
+
 const CONFETTI_COLOURS = ['#FAA329', '#0D7D8A', '#DE471A', '#821457'];
 
 function Confetti() {
@@ -34,12 +37,11 @@ function Confetti() {
 }
 
 interface SoloScreenProps {
-  roundLimit: number | null;
   onExit: () => void;
 }
 
-export default function SoloScreen({ roundLimit, onExit }: SoloScreenProps) {
-  const { state, pick, next, newGame } = useGame(roundLimit);
+export default function SoloScreen({ onExit }: SoloScreenProps) {
+  const { state, pick, next, newGame } = useGame(GAME_ROUNDS);
   const { phase, chooser, piles, pot, round, lastResult } = state;
 
   const [shuffling, setShuffling] = useState(true);
@@ -49,18 +51,27 @@ export default function SoloScreen({ roundLimit, onExit }: SoloScreenProps) {
     return () => clearTimeout(timer);
   }, [shuffling]);
 
-  // The computer chooser picks a random category after a short pause.
+  // On the computer's rounds nothing happens until the player plays their
+  // card, then the computer picks a random category after a short pause.
+  // The game never plays a hand without the player's input.
+  const [cpuThinking, setCpuThinking] = useState(false);
   useEffect(() => {
-    if (shuffling || phase !== 'choosing' || chooser !== CPU) return;
+    if (!cpuThinking) return;
     const timer = setTimeout(() => {
+      setCpuThinking(false);
       const stat = COMPARABLE_STATS[Math.floor(Math.random() * COMPARABLE_STATS.length)];
       pick(stat.key);
-    }, 1200);
+    }, 900);
     return () => clearTimeout(timer);
-  }, [shuffling, phase, chooser, round, pick]);
+  }, [cpuThinking, pick]);
 
-  // After the reveal the game moves on by itself, long enough to read the
-  // result and see the winning stat pulse, no tap needed.
+  const playCard = () => {
+    if (shuffling || phase !== 'choosing' || chooser !== CPU || cpuThinking) return;
+    setCpuThinking(true);
+  };
+
+  // After the reveal the game moves to the next round by itself, long
+  // enough to read the result and see the winning stat pulse.
   useEffect(() => {
     if (phase !== 'revealed') return;
     const timer = setTimeout(() => next(), 2500);
@@ -68,6 +79,7 @@ export default function SoloScreen({ roundLimit, onExit }: SoloScreenProps) {
   }, [phase, round, next]);
 
   const restart = () => {
+    setCpuThinking(false);
     newGame();
     setShuffling(true);
   };
@@ -89,7 +101,7 @@ export default function SoloScreen({ roundLimit, onExit }: SoloScreenProps) {
           <StaceLogo width={110} />
           <h1 className="text-2xl font-bold">
             {draw
-              ? 'A draw, the final cards ended in the pot'
+              ? 'A draw, you and the computer hold the same number of cards'
               : won
                 ? 'You beat the computer'
                 : 'The computer wins this time'}
@@ -128,8 +140,11 @@ export default function SoloScreen({ roundLimit, onExit }: SoloScreenProps) {
     if (chooser === HUMAN) {
       banner = 'Your pick. Choose a category from your card.';
       bannerStyle = 'bg-turmeric text-black';
-    } else {
+    } else if (cpuThinking) {
       banner = 'The computer is choosing a category.';
+      bannerStyle = 'border border-neutral-300 bg-white text-black';
+    } else {
+      banner = 'The computer picks this round. Play your card when ready.';
       bannerStyle = 'border border-neutral-300 bg-white text-black';
     }
   } else if (result.outcome === 'tie') {
@@ -156,8 +171,7 @@ export default function SoloScreen({ roundLimit, onExit }: SoloScreenProps) {
         <StaceLogo width={64} />
         <div className="flex items-center gap-2">
           <span className="rounded-full bg-black px-3 py-1 text-xs font-bold text-white">
-            Round {round}
-            {state.roundLimit !== null ? ` of ${state.roundLimit}` : ''}
+            Round {Math.min(round, GAME_ROUNDS)} of {GAME_ROUNDS}
           </span>
           {pot.length > 0 && (
             <span className="rounded-full border border-neutral-300 bg-white px-3 py-1 text-xs font-bold">
@@ -171,7 +185,7 @@ export default function SoloScreen({ roundLimit, onExit }: SoloScreenProps) {
       </header>
 
       <p
-        key={`${round}-${phase}`}
+        key={`${round}-${phase}-${cpuThinking}`}
         className={`animate-banner-in mx-auto mt-3 max-w-md rounded-lg px-4 py-2.5 text-center text-sm font-bold ${bannerStyle}`}
       >
         {banner}
@@ -204,6 +218,11 @@ export default function SoloScreen({ roundLimit, onExit }: SoloScreenProps) {
             <span className="rounded-full border border-neutral-300 bg-white px-2.5 py-0.5 text-xs font-bold">
               {piles[HUMAN].length} {piles[HUMAN].length === 1 ? 'card' : 'cards'}
             </span>
+            {chooser === HUMAN && phase === 'choosing' && (
+              <span className="rounded-full bg-turmeric px-2.5 py-0.5 text-xs font-bold text-black">
+                Chooser
+              </span>
+            )}
           </div>
           <Card
             card={piles[HUMAN][0]}
@@ -222,6 +241,15 @@ export default function SoloScreen({ roundLimit, onExit }: SoloScreenProps) {
                 </button>
               ))}
             </div>
+          )}
+          {chooser === CPU && phase === 'choosing' && (
+            <button
+              onClick={playCard}
+              disabled={cpuThinking}
+              className="w-72 rounded-full bg-black px-10 py-3 text-sm font-bold text-white hover:bg-black/85 disabled:opacity-50"
+            >
+              {cpuThinking ? 'The computer is choosing' : 'Play your card'}
+            </button>
           )}
         </section>
       </main>

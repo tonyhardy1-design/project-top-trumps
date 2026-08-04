@@ -5,7 +5,7 @@ import StaceLogo from './StaceLogo';
 /**
  * The address other people should open to play. On localhost during
  * development this is the dev machine's network address, on a deployed
- * build it is simply the site's own origin.
+ * build it is simply the site's own address.
  */
 function resolveShareUrl(): string {
   const { hostname, origin, pathname } = window.location;
@@ -16,12 +16,10 @@ function resolveShareUrl(): string {
 }
 
 interface StartScreenProps {
-  roundLimit: number | null;
-  onRoundLimit: (value: number | null) => void;
   onPlay: () => void;
 }
 
-export default function StartScreen({ roundLimit, onRoundLimit, onPlay }: StartScreenProps) {
+export default function StartScreen({ onPlay }: StartScreenProps) {
   const [shareUrl] = useState(resolveShareUrl);
   const [qr, setQr] = useState<string | null>(null);
 
@@ -40,31 +38,15 @@ export default function StartScreen({ roundLimit, onRoundLimit, onPlay }: StartS
             Project <span className="text-turmeric">Top Trumps</span>
           </h1>
           <p className="mt-3 text-sm leading-relaxed text-neutral-700">
-            Take on the computer with real Stace cost data. Each round the chooser
-            picks a stat, the better value takes the cards, and whoever holds the
-            most cards at the end wins.
+            Take on the computer with real Stace cost data. Six rounds, the chooser
+            picks a stat each round, the better value takes the cards, and whoever
+            holds the most cards at the end wins.
           </p>
           <p className="mt-2 text-xs text-neutral-500">
             This deck covers Residential and Student Accommodation projects only,
             121 cards built from Stace benchmarking data.
           </p>
         </div>
-
-        <label className="flex items-center gap-2 text-sm font-medium">
-          Game length
-          <select
-            value={roundLimit === null ? 'unlimited' : String(roundLimit)}
-            onChange={(e) =>
-              onRoundLimit(e.target.value === 'unlimited' ? null : Number(e.target.value))
-            }
-            className="rounded-md border border-neutral-300 bg-white px-2 py-1.5 text-sm"
-          >
-            <option value="10">10 rounds</option>
-            <option value="20">20 rounds</option>
-            <option value="30">30 rounds</option>
-            <option value="unlimited">Unlimited</option>
-          </select>
-        </label>
 
         <button
           onClick={onPlay}
